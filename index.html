@@ -49,6 +49,9 @@
       });
 
       document.getElementById("success-message").style.display = "block";
+      setTimeout(() => {
+        liff.close();
+      }, 1500);
     });
 
     initLiff();
