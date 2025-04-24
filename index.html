@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>ลงทะเบียนสมาชิก</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body style="font-family: sans-serif; margin: 0; padding: 20px; background: #f8f9fa;">
+  <div style="max-width: 500px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+    <h2 style="text-align: center; color: #333;">ลงทะเบียนสมาชิก</h2>
+    <form id="register-form">
+      <input type="text" id="name" placeholder="ชื่อ" required style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;"><br>
+      <input type="tel" id="phone" placeholder="เบอร์โทรศัพท์" required style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;"><br>
+      <input type="date" id="birthday" required style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;"><br>
+      <button type="submit" style="width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 4px; font-size: 16px;">ส่งข้อมูล</button>
+    </form>
+    <p id="success-message" style="color: green; text-align: center; margin-top: 20px; display: none;">ส่งข้อมูลเรียบร้อยแล้ว 🎉</p>
+  </div>
+
+  <script>
+    let userId = "";
+
+    async function initLiff() {
+      await liff.init({ liffId: "2007314988-2nrybXKL" });
+      if (!liff.isLoggedIn()) {
+        liff.login();
+      } else {
+        const profile = await liff.getProfile();
+        userId = profile.userId;
+      }
+    }
+
+    document.getElementById("register-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const data = {
+        userId,
+        name: document.getElementById("name").value,
+        phone: document.getElementById("phone").value,
+        birthday: document.getElementById("birthday").value
+      };
+
+      fetch("https://script.google.com/macros/s/AKfycbzkJbQSgryXdxNEbBl0uSGCLMlnI3doDGh0BzR-6Vooi8hQUf01X6zBWE1clAU1GVg/exec", {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      document.getElementById("success-message").style.display = "block";
+    });
+
+    initLiff();
+  </script>
+</body>
+</html>
