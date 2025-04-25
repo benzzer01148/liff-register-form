@@ -3,16 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ลงทะเบียนสมาชิก</title>
+  <title>สมาชิก</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body { font-family: sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .hidden { display: none; }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #1DB446;
+      color: white;
+      border: none;
+    }
+  </style>
 </head>
-<body style="font-family: sans-serif; margin: 0; padding: 20px; background: #f8f9fa;">
-  <div style="max-width: 500px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-    <h2 style="text-align: center; color: #333;">ข้อมูลสมาชิกของคุณ</h2>
-    <div id="member-info" style="text-align: center;">
-      <h3>ชื่อ: <span id="member-name">-</span></h3>
-      <h3>ยอดสั่งซื้อทั้งหมด: <span id="member-total">-</span> บาท</h3>
-    </div>
+<body>
+  <div class="container" id="dashboard" class="hidden">
+    <h2 style="text-align:center;">ข้อมูลสมาชิกของคุณ</h2>
+    <h3>ชื่อ: <span id="member-name">-</span></h3>
+    <h3>ยอดสั่งซื้อทั้งหมด: <span id="member-total">-</span> บาท</h3>
+  </div>
+
+  <div class="container hidden" id="register-form">
+    <h2 style="text-align:center;">ลงทะเบียนสมาชิก</h2>
+    <input type="text" id="name" placeholder="ชื่อ" required>
+    <input type="tel" id="phone" placeholder="เบอร์โทรศัพท์" required>
+    <input type="date" id="birthday" required>
+    <button onclick="submitRegistration()">ส่งข้อมูล</button>
+    <p id="success-message" style="text-align:center; color:green; display:none;">ส่งข้อมูลเรียบร้อยแล้ว 🎉</p>
   </div>
 
   <script>
@@ -25,25 +57,52 @@
       } else {
         const profile = await liff.getProfile();
         userId = profile.userId;
-        loadMemberInfo(userId);
+        checkMembership(userId);
       }
     }
 
-    function loadMemberInfo(uid) {
+    function checkMembership(uid) {
       fetch("https://script.google.com/macros/s/AKfycbzJSNU2G7QHKv9IdEqQHJ_jGHxowV_yo-KlfkZ7DR6yoPV89dDDre48jlfCslRmhSzLRA/exec?userId=" + uid)
         .then(res => res.json())
         .then(data => {
-          document.getElementById("member-name").textContent = data.name || "-";
-          document.getElementById("member-total").textContent = data.total || "0";
+          if (data.error) {
+            document.getElementById("register-form").classList.remove("hidden");
+          } else {
+            document.getElementById("member-name").textContent = data.name || "-";
+            document.getElementById("member-total").textContent = data.total || "0";
+            document.getElementById("dashboard").classList.remove("hidden");
+          }
         })
         .catch(err => {
-          document.getElementById("member-info").innerHTML = "<p>ไม่พบข้อมูลสมาชิกของคุณ</p>";
           console.error(err);
+          document.getElementById("register-form").classList.remove("hidden");
         });
     }
 
-    function contactSupport() {
-      liff.openWindow({ url: "https://lin.ee/A2ut5rE", external: true });
+    function submitRegistration() {
+      const name = document.getElementById("name").value;
+      const phone = document.getElementById("phone").value;
+      const birthday = document.getElementById("birthday").value;
+
+      if (!name || !phone || !birthday) {
+        alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+        return;
+      }
+
+      const data = { userId, name, phone, birthday };
+
+      fetch("https://script.google.com/macros/s/AKfycbzkJbQSgryXdxNEbBl0uSGCLMlnI3doDGh0BzR-6Vooi8hQUf01X6zBWE1clAU1GVg/exec", {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      document.getElementById("success-message").style.display = "block";
+
+      setTimeout(() => {
+        liff.close();
+      }, 1500);
     }
 
     initLiff();
