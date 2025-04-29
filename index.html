@@ -32,7 +32,7 @@
   </style>
 </head>
 <body>
-  <div class="container" id="dashboard" class="hidden">
+  <div class="container hidden" id="dashboard">
     <h2 style="text-align:center;">ข้อมูลสมาชิกของคุณ</h2>
     <h3>ชื่อ: <span id="member-name">-</span></h3>
     <h3>ยอดสั่งซื้อทั้งหมด: <span id="member-total">-</span> บาท</h3>
@@ -67,15 +67,18 @@
         .then(data => {
           if (data.error) {
             document.getElementById("register-form").classList.remove("hidden");
+            document.getElementById("dashboard").classList.add("hidden");
           } else {
             document.getElementById("member-name").textContent = data.name || "-";
             document.getElementById("member-total").textContent = data.total || "0";
             document.getElementById("dashboard").classList.remove("hidden");
+            document.getElementById("register-form").classList.add("hidden");
           }
         })
         .catch(err => {
           console.error(err);
           document.getElementById("register-form").classList.remove("hidden");
+          document.getElementById("dashboard").classList.add("hidden");
         });
     }
 
