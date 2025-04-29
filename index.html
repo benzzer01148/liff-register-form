@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LIFF Register Form</title>
+  <title>Membership Register</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -141,7 +141,7 @@
 
     async function checkMembership(uid) {
       try {
-        const res = await fetch("https://script.google.com/macros/s/AKfycbx7b7N3xW7xQ6H4zXlqZp6l1E7bF9lW9Jv5z3iX-1cYvTQ6b8g/exec?userId=" + encodeURIComponent(uid));
+        const res = await fetch("https://script.google.com/macros/s/AKfycbwmcJXf184_ncvmLuQPsYAw9AGvqlrQvGC0NMHa3sIAo_2HX80tDvdqoy4n0_NMFh8/exec?userId=" + encodeURIComponent(uid));
         const data = await res.json();
 
         if (data && !data.error) {
@@ -183,7 +183,7 @@
           phone
         });
 
-        const res = await fetch("https://script.google.com/macros/s/AKfycbx7b7N3xW7xQ6H4zXlqZp6l1E7bF9lW9Jv5z3iX-1cYvTQ6b8g/exec", {
+        const res = await fetch("https://script.google.com/macros/s/AKfycbwmcJXf184_ncvmLuQPsYAw9AGvqlrQvGC0NMHa3sIAo_2HX80tDvdqoy4n0_NMFh8/exec", {
           method: "POST",
           headers: {
             "Content-Type": "application/x-www-form-urlencoded"
