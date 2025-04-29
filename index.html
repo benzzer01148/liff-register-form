@@ -173,20 +173,19 @@
       document.getElementById("loading").style.display = "flex";
 
       try {
-        const params = new URLSearchParams({
-          userId,
-          name,
-          phone
-        });
-
-        const res = await fetch("https://script.google.com/macros/s/AKfycbwmcJXf184_ncvmLuQPsYAw9AGvqlrQvGC0NMHa3sIAo_2HX80tDvdqoy4n0_NMFh8/exec", {
+        await fetch("https://script.google.com/macros/s/AKfycbwmcJXf184_ncvmLuQPsYAw9AGvqlrQvGC0NMHa3sIAo_2HX80tDvdqoy4n0_NMFh8/exec", {
           method: "POST",
           headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
+            "Content-Type": "application/json"
           },
-          body: params.toString()
+          body: JSON.stringify({
+            userId,
+            name,
+            phone
+          })
         });
 
+        const res = await fetch("https://script.google.com/macros/s/AKfycbwmcJXf184_ncvmLuQPsYAw9AGvqlrQvGC0NMHa3sIAo_2HX80tDvdqoy4n0_NMFh8/exec?userId=" + encodeURIComponent(userId));
         const data = await res.json();
         if (data && !data.error) {
           showDialog("ลงทะเบียนสำเร็จ");
