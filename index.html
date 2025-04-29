@@ -173,7 +173,7 @@
       document.getElementById("loading").style.display = "flex";
 
       try {
-        await fetch("https://script.google.com/macros/s/AKfycbwmcJXf184_ncvmLuQPsYAw9AGvqlrQvGC0NMHa3sIAo_2HX80tDvdqoy4n0_NMFh8/exec", {
+        await fetch("https://script.google.com/macros/s/AKfycbz5Of6vINT9zfF-nWL72zr2ua4NcDl_h2QVWDBto0pct6cAfbxKqgN3oTSKW-Qx1HU/exec", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -185,7 +185,7 @@
           })
         });
 
-        const res = await fetch("https://script.google.com/macros/s/AKfycbwmcJXf184_ncvmLuQPsYAw9AGvqlrQvGC0NMHa3sIAo_2HX80tDvdqoy4n0_NMFh8/exec?userId=" + encodeURIComponent(userId));
+        const res = await fetch("https://script.google.com/macros/s/AKfycbz5Of6vINT9zfF-nWL72zr2ua4NcDl_h2QVWDBto0pct6cAfbxKqgN3oTSKW-Qx1HU/exec?userId=" + encodeURIComponent(userId));
         const data = await res.json();
         if (data && !data.error) {
           showDialog("ลงทะเบียนสำเร็จ");
