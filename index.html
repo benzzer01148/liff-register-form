@@ -15,7 +15,7 @@
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    .hidden { display: none; }
+    .hidden { display: none !important; }
     input, button {
       width: 100%;
       padding: 10px;
@@ -29,9 +29,27 @@
       color: white;
       border: none;
     }
+    .spinner {
+      margin: 20px auto;
+      width: 50px;
+      height: 50px;
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #1DB446;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
+  <div id="loading" class="container" style="display:none; text-align:center;">
+    <div class="spinner"></div>
+    <p>กำลังโหลดข้อมูล...</p>
+  </div>
+
   <div class="container hidden" id="dashboard">
     <h2 style="text-align:center;">ข้อมูลสมาชิกของคุณ</h2>
     <h3>ชื่อ: <span id="member-name">-</span></h3>
@@ -57,32 +75,35 @@
       } else {
         const profile = await liff.getProfile();
         userId = profile.userId;
-        checkMembership(userId);
+        await checkMembership(userId);
       }
     }
 
-    function checkMembership(uid) {
-      fetch("https://script.google.com/macros/s/AKfycbzJSNU2G7QHKv9IdEqQHJ_jGHxowV_yo-KlfkZ7DR6yoPV89dDDre48jlfCslRmhSzLRA/exec?userId=" + uid)
-        .then(res => res.json())
-        .then(data => {
-          if (data.error) {
-            document.getElementById("register-form").classList.remove("hidden");
-            document.getElementById("dashboard").classList.add("hidden");
-          } else {
-            document.getElementById("member-name").textContent = data.name || "-";
-            document.getElementById("member-total").textContent = data.total || "0";
-            document.getElementById("dashboard").classList.remove("hidden");
-            document.getElementById("register-form").classList.add("hidden");
-          }
-        })
-        .catch(err => {
-          console.error(err);
+    async function checkMembership(uid) {
+      document.getElementById("loading").style.display = "block";
+      document.getElementById("dashboard").classList.add("hidden");
+      document.getElementById("register-form").classList.add("hidden");
+
+      try {
+        const res = await fetch("https://script.google.com/macros/s/AKfycbwmcJXf184_ncvmLuQPsYAw9AGvqlrQvGC0NMHa3sIAo_2HX80tDvdqoy4n0_NMFh8/exec?userId=" + uid);
+        const data = await res.json();
+
+        if (data.error) {
           document.getElementById("register-form").classList.remove("hidden");
-          document.getElementById("dashboard").classList.add("hidden");
-        });
+        } else {
+          document.getElementById("member-name").textContent = data.name || "-";
+          document.getElementById("member-total").textContent = data.total || "0";
+          document.getElementById("dashboard").classList.remove("hidden");
+        }
+      } catch (err) {
+        console.error(err);
+        document.getElementById("register-form").classList.remove("hidden");
+      } finally {
+        document.getElementById("loading").style.display = "none";
+      }
     }
 
-    function submitRegistration() {
+    async function submitRegistration() {
       const name = document.getElementById("name").value;
       const phone = document.getElementById("phone").value;
       const birthday = document.getElementById("birthday").value;
@@ -94,18 +115,28 @@
 
       const data = { userId, name, phone, birthday };
 
-      fetch("https://script.google.com/macros/s/AKfycbzkJbQSgryXdxNEbBl0uSGCLMlnI3doDGh0BzR-6Vooi8hQUf01X6zBWE1clAU1GVg/exec", {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
+      document.getElementById("loading").style.display = "block";
 
-      document.getElementById("success-message").style.display = "block";
+      try {
+        await fetch("https://script.google.com/macros/s/AKfycbzkJbQSgryXdxNEbBl0uSGCLMlnI3doDGh0BzR-6Vooi8hQUf01X6zBWE1clAU1GVg/exec", {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
 
-      setTimeout(() => {
-        liff.close();
-      }, 1500);
+        document.getElementById("success-message").style.display = "block";
+
+        setTimeout(async () => {
+          document.getElementById("success-message").style.display = "none";
+          await checkMembership(userId);
+        }, 1500);
+      } catch (err) {
+        console.error(err);
+        alert("เกิดข้อผิดพลาดในการลงทะเบียน");
+      } finally {
+        document.getElementById("loading").style.display = "none";
+      }
     }
 
     initLiff();
