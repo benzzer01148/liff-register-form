@@ -30,6 +30,8 @@
   <h2 style="text-align:center;">ข้อมูลสมาชิกของคุณ</h2>
   <h3>ชื่อ: <span id="member-name">-</span></h3>
   <h3>ยอดสั่งซื้อทั้งหมด: <span id="member-total">-</span> บาท</h3>
+  <h3>ประวัติคำสั่งซื้อ:</h3>
+  <ul id="order-list"></ul>
 </div>
 
 <div class="container hidden" id="register-form">
@@ -85,6 +87,17 @@ async function checkMembership(uid) {
         }, 0);
       }
       document.getElementById("member-total").textContent = total.toFixed(2);
+
+      const orderList = document.getElementById("order-list");
+      orderList.innerHTML = "";
+      if (Array.isArray(data.orders)) {
+        data.orders.forEach(order => {
+          const li = document.createElement("li");
+          li.textContent = `${order.date || "-"} : ${order.amount} บาท - ${order.note}`;
+          orderList.appendChild(li);
+        });
+      }
+
       document.getElementById("dashboard").classList.remove("hidden");
       document.getElementById("register-form").classList.add("hidden");
     } else {
