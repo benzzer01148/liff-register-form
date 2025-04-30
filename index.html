@@ -77,7 +77,14 @@ async function checkMembership(uid) {
 
     if (data && !data.error) {
       document.getElementById("member-name").textContent = data.name || "-";
-      document.getElementById("member-total").textContent = data.total || "0";
+      let total = 0;
+      if (Array.isArray(data.orders)) {
+        total = data.orders.reduce((sum, order) => {
+          const val = parseFloat(order.replace(/[^0-9.]/g, ""));
+          return sum + (isNaN(val) ? 0 : val);
+        }, 0);
+      }
+      document.getElementById("member-total").textContent = total.toFixed(2);
       document.getElementById("dashboard").classList.remove("hidden");
       document.getElementById("register-form").classList.add("hidden");
     } else {
