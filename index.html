@@ -1,221 +1,87 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Membership Register</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบสมาชิก LIFF</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0 1rem;
-      background-color: #f9f9f9;
-    }
-    #loading {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(255,255,255,0.8);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      font-size: 1.2rem;
-      color: #333;
-    }
-    .hidden {
-      display: none;
-    }
-    #register-form, #dashboard {
-      max-width: 400px;
-      margin: 2rem auto;
-      background: #fff;
-      padding: 1.5rem;
-      border-radius: 6px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    }
-    #register-form h2, #dashboard h2 {
-      margin-top: 0;
-      margin-bottom: 1rem;
-      color: #333;
-    }
-    label {
-      display: block;
-      margin-bottom: 0.3rem;
-      font-weight: bold;
-      color: #555;
-    }
-    input[type="text"], input[type="email"], input[type="tel"] {
-      width: 100%;
-      padding: 0.5rem;
-      margin-bottom: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 1rem;
-      box-sizing: border-box;
-    }
-    button {
-      background-color: #00c300;
-      color: white;
-      border: none;
-      padding: 0.7rem 1.2rem;
-      font-size: 1rem;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    button:hover {
-      background-color: #009900;
-    }
-    #dashboard p {
-      font-size: 1.1rem;
-      margin: 0.5rem 0;
-      color: #333;
-    }
-    #dialog {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: #323232;
-      color: white;
-      padding: 1rem 2rem;
-      border-radius: 4px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
-      z-index: 10000;
-      opacity: 0.9;
-    }
+    body { font-family: sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+    .container { max-width: 500px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    .hidden { display: none !important; }
+    input, button { width: 100%; padding: 10px; margin: 10px 0; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; }
+    button { background-color: #1DB446; color: white; border: none; }
+    #loading { display: none; text-align: center; }
+    .spinner { margin: 20px auto; width: 50px; height: 50px; border: 6px solid #f3f3f3; border-top: 6px solid #1DB446; border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    #dialog { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+    #dialog-content { background: white; padding: 20px 30px; border-radius: 8px; font-size: 18px; text-align: center; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
   </style>
 </head>
 <body>
-  <div id="loading" class="hidden">กำลังโหลด...</div>
 
-  <div id="register-form" class="hidden">
-    <h2>ลงทะเบียนสมาชิก</h2>
-    <form id="form">
-      <label for="name">ชื่อ-สกุล</label>
-      <input type="text" id="name" name="name" required />
-      <label for="phone">เบอร์โทรศัพท์</label>
-      <input type="tel" id="phone" name="phone" required />
-      <button type="submit">ลงทะเบียน</button>
-    </form>
-  </div>
+<div id="loading" class="container">
+  <div class="spinner"></div>
+  <p>กำลังโหลดข้อมูล...</p>
+</div>
 
-  <div id="dashboard" class="hidden">
-    <h2>ข้อมูลสมาชิก</h2>
-    <p>ชื่อ: <span id="member-name">-</span></p>
-    <p>ยอดรวม: <span id="member-total">0</span></p>
-  </div>
+<div class="container hidden" id="dashboard">
+  <h2 style="text-align:center;">ข้อมูลสมาชิกของคุณ</h2>
+  <h3>ชื่อ: <span id="member-name">-</span></h3>
+  <h3>ยอดสั่งซื้อทั้งหมด: <span id="member-total">-</span> บาท</h3>
+</div>
 
-  <div id="dialog" class="hidden"></div>
+<div class="container hidden" id="register-form">
+  <h2 style="text-align:center;">ลงทะเบียนสมาชิก</h2>
+  <input type="text" id="name" placeholder="ชื่อ" required>
+  <input type="tel" id="phone" placeholder="เบอร์โทรศัพท์" required>
+  <button onclick="submitRegistration(event)">ส่งข้อมูล</button>
+</div>
 
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <script>
-    let userId = "";
+<div id="dialog" class="hidden">
+  <div id="dialog-content"></div>
+</div>
 
-    async function initLiff() {
-      try {
-        document.getElementById("loading").style.display = "flex";
-        await liff.init({ liffId: "2007314988-2nrybXKL" });
-        if (!liff.isLoggedIn()) {
-          liff.login();
-        } else {
-          const profile = await liff.getProfile();
-          userId = profile.userId;
+<script>
+async function submitRegistration(event) {
+  event.preventDefault();
+  const name = document.getElementById("name").value.trim();
+  const phone = document.getElementById("phone").value.trim();
 
-          if (userId) {
-            await checkMembership(userId);
-          } else {
-            console.error("ไม่สามารถดึง userId ได้จาก LIFF");
-            showDialog("มีข้อผิดพลาด กรุณาลองใหม่");
-            document.getElementById("loading").style.display = "none";
-          }
-        }
-      } catch (err) {
-        console.error("LIFF init error", err);
-        showDialog("เกิดปัญหาในการเชื่อมต่อ LINE Login");
-        document.getElementById("loading").style.display = "none";
-      }
-    }
+  if (!name || !phone) {
+    showDialog("กรุณากรอกข้อมูลให้ครบถ้วน");
+    return;
+  }
 
-    async function checkMembership(uid) {
-      try {
-        const res = await fetch("https://script.google.com/macros/s/AKfycbwmcJXf184_ncvmLuQPsYAw9AGvqlrQvGC0NMHa3sIAo_2HX80tDvdqoy4n0_NMFh8/exec?userId=" + encodeURIComponent(uid));
-        const data = await res.json();
+  document.getElementById("loading").style.display = "flex";
 
-        if (data && !data.error) {
-          document.getElementById("member-name").textContent = data.name || "-";
-          document.getElementById("member-total").textContent = data.total || "0";
-          document.getElementById("dashboard").classList.remove("hidden");
-          document.getElementById("register-form").classList.add("hidden");
-        } else {
-          document.getElementById("register-form").classList.remove("hidden");
-          document.getElementById("dashboard").classList.add("hidden");
-        }
-      } catch (err) {
-        console.error("Fetch member info error", err);
-        document.getElementById("register-form").classList.remove("hidden");
-        document.getElementById("dashboard").classList.add("hidden");
-      } finally {
-        document.getElementById("loading").style.display = "none";
-      }
-    }
+  try {
+    await fetch("https://script.google.com/macros/s/AKfycbz5Of6vINT9zfF-nWL72zr2ua4NcDl_h2QVWDBto0pct6cAfbxKqgN3oTSKW-Qx1HU/exec", {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        userId,
+        name,
+        phone
+      })
+    });
 
-    async function submitRegistration(event) {
-      event.preventDefault();
-      const name = document.getElementById("name").value.trim();
-      const phone = document.getElementById("phone").value.trim();
+    showDialog("ลงทะเบียนสำเร็จ");
+    setTimeout(async () => {
+      await checkMembership(userId);
+    }, 1500);
 
-      if (!name || !phone) {
-        showDialog("กรุณากรอกข้อมูลให้ครบถ้วน");
-        return;
-      }
-
-      document.getElementById("loading").style.display = "flex";
-
-      try {
-        await fetch("https://script.google.com/macros/s/AKfycbz5Of6vINT9zfF-nWL72zr2ua4NcDl_h2QVWDBto0pct6cAfbxKqgN3oTSKW-Qx1HU/exec", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            userId,
-            name,
-            phone
-          })
-        });
-
-        const res = await fetch("https://script.google.com/macros/s/AKfycbz5Of6vINT9zfF-nWL72zr2ua4NcDl_h2QVWDBto0pct6cAfbxKqgN3oTSKW-Qx1HU/exec?userId=" + encodeURIComponent(userId));
-        const data = await res.json();
-        if (data && !data.error) {
-          showDialog("ลงทะเบียนสำเร็จ");
-          await checkMembership(userId);
-        } else {
-          showDialog("ลงทะเบียนไม่สำเร็จ กรุณาลองใหม่");
-        }
-      } catch (err) {
-        console.error("Submit registration error", err);
-        showDialog("เกิดข้อผิดพลาดในการส่งข้อมูล");
-      } finally {
-        document.getElementById("loading").style.display = "none";
-      }
-    }
-
-    function showDialog(message) {
-      const dialog = document.getElementById("dialog");
-      dialog.textContent = message;
-      dialog.classList.remove("hidden");
-      clearTimeout(dialog._timeout);
-      dialog._timeout = setTimeout(() => {
-        dialog.classList.add("hidden");
-      }, 2000);
-    }
-
-    document.getElementById("form").addEventListener("submit", submitRegistration);
-
-    window.onload = () => {
-      initLiff();
-    };
-  </script>
+  } catch (err) {
+    console.error("Submit registration error", err);
+    showDialog("เกิดข้อผิดพลาดในการส่งข้อมูล");
+  } finally {
+    document.getElementById("loading").style.display = "none";
+  }
+}
+</script>
 </body>
 </html>
