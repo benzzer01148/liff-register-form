@@ -44,6 +44,67 @@
 </div>
 
 <script>
+let userId = "";
+
+async function initLiff() {
+  try {
+    document.getElementById("loading").style.display = "flex";
+    await liff.init({ liffId: "2007314988-2nrybXKL" });
+    if (!liff.isLoggedIn()) {
+      liff.login();
+    } else {
+      const profile = await liff.getProfile();
+      userId = profile.userId;
+      if (userId) {
+        await checkMembership(userId);
+      } else {
+        showDialog("เกิดข้อผิดพลาดในการรับข้อมูลผู้ใช้");
+        document.getElementById("loading").style.display = "none";
+      }
+    }
+  } catch (err) {
+    console.error("LIFF init error", err);
+    showDialog("ไม่สามารถเชื่อมต่อ LINE ได้");
+    document.getElementById("loading").style.display = "none";
+  }
+}
+
+async function checkMembership(uid) {
+  try {
+    const res = await fetch("https://script.google.com/macros/s/AKfycbz5Of6vINT9zfF-nWL72zr2ua4NcDl_h2QVWDBto0pct6cAfbxKqgN3oTSKW-Qx1HU/exec?userId=" + uid);
+    const data = await res.json();
+
+    if (data && !data.error) {
+      document.getElementById("member-name").textContent = data.name || "-";
+      document.getElementById("member-total").textContent = data.total || "0";
+      document.getElementById("dashboard").classList.remove("hidden");
+      document.getElementById("register-form").classList.add("hidden");
+    } else {
+      document.getElementById("register-form").classList.remove("hidden");
+      document.getElementById("dashboard").classList.add("hidden");
+    }
+  } catch (err) {
+    console.error("Fetch member info error", err);
+    showDialog("โหลดข้อมูลสมาชิกไม่สำเร็จ");
+    document.getElementById("register-form").classList.remove("hidden");
+    document.getElementById("dashboard").classList.add("hidden");
+  } finally {
+    document.getElementById("loading").style.display = "none";
+  }
+}
+
+function showDialog(message) {
+  const dialog = document.getElementById("dialog");
+  const content = document.getElementById("dialog-content");
+  content.textContent = message;
+  dialog.classList.remove("hidden");
+  setTimeout(() => {
+    dialog.classList.add("hidden");
+  }, 2000);
+}
+
+initLiff();
+
 async function submitRegistration(event) {
   event.preventDefault();
   const name = document.getElementById("name").value.trim();
