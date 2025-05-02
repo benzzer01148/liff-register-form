@@ -48,6 +48,25 @@
 <script>
 let userId = "";
 
+async function logUserLogin() {
+  try {
+    await fetch("https://script.google.com/macros/s/AKfycbz5Of6vINT9zfF-nWL72zr2ua4NcDl_h2QVWDBto0pct6cAfbxKqgN3oTSKW-Qx1HU/exec", {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        action: "log",
+        userId,
+        timestamp: new Date().toISOString()
+      })
+    });
+  } catch (err) {
+    console.error("logUserLogin error", err);
+  }
+}
+
 async function initLiff() {
   try {
     document.getElementById("loading").style.display = "flex";
@@ -57,6 +76,7 @@ async function initLiff() {
     } else {
       const profile = await liff.getProfile();
       userId = profile.userId;
+      await logUserLogin();
       if (userId) {
         await checkMembership(userId);
       } else {
