@@ -132,7 +132,7 @@ async function checkMembership(uid) {
     const data = JSON.parse(text);
 
     if (data && !data.error) {
-      document.getElementById("member-name").textContent = data.name || "-";
+      // document.getElementById("member-name").textContent = data.name || "-";
       document.getElementById("member-id").textContent = uid || "-";
       let total = parseFloat(data.total) || 0;
       document.getElementById("member-total").textContent = total.toFixed(2);
@@ -185,6 +185,9 @@ async function initLiff() {
       liff.login();
     } else {
       const profile = await liff.getProfile();
+      // Set profile avatar to user's LINE profile picture
+      document.querySelector(".profile-avatar").src = profile.pictureUrl;
+      document.getElementById("member-name").textContent = profile.displayName;
       const uid = profile.userId;
       console.log("User ID:", uid);
       await checkMembership(uid);
