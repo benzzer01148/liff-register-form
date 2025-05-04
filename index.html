@@ -11,7 +11,7 @@
     input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 6px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
     button { background-color: #3b82f6; color: white; border: none; font-weight: 600; cursor: pointer; transition: background-color 0.3s ease; }
     button:hover { background-color: #2563eb; }
-    #loading { display: none; text-align: center; }
+    #loading { display: none; text-align: center; justify-content: center; align-items: center; flex-direction: column; }
     .spinner { margin: 20px auto; width: 50px; height: 50px; border: 6px solid #e0e7ff; border-top: 6px solid #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     #dialog {
@@ -79,12 +79,13 @@
     }
   </style>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://unpkg.com/lottie-web/build/player/lottie.min.js"></script>
 </head>
 <body>
 
 <!-- Loading -->
 <div id="loading" class="container hidden">
-  <div class="spinner"></div>
+  <div id="lottie-loading" style="width:100px; height:100px; margin:auto;"></div>
   <p>กำลังโหลดข้อมูล...</p>
 </div>
 
@@ -123,8 +124,26 @@
 </div>
 
 <script>
-async function checkMembership(uid) {
+function showLoading() {
   document.getElementById("loading").style.display = "flex";
+  document.getElementById("dashboard").classList.add("hidden");
+  document.getElementById("register-form").classList.add("hidden");
+}
+
+function hideLoading() {
+  document.getElementById("loading").style.display = "none";
+}
+
+lottie.loadAnimation({
+  container: document.getElementById('lottie-loading'),
+  renderer: 'svg',
+  loop: true,
+  autoplay: true,
+  path: 'https://assets5.lottiefiles.com/packages/lf20_usmfx6bp.json'
+});
+
+async function checkMembership(uid) {
+  showLoading();
   try {
     const res = await fetch("https://script.google.com/macros/s/AKfycbz5Of6vINT9zfF-nWL72zr2ua4NcDl_h2QVWDBto0pct6cAfbxKqgN3oTSKW-Qx1HU/exec?userId=" + uid);
     const text = await res.text();
@@ -164,7 +183,7 @@ async function checkMembership(uid) {
     document.getElementById("register-form").classList.remove("hidden");
     document.getElementById("dashboard").classList.add("hidden");
   } finally {
-    document.getElementById("loading").style.display = "none";
+    hideLoading();
   }
 }
 
