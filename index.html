@@ -154,10 +154,11 @@ async function checkMembership(uid) {
     const text = await res.text();
     console.log("Response text", text);
     const data = JSON.parse(text);
+    console.log("Fetched data:", data);
 
     if (data && !data.error) {
       // document.getElementById("member-name").textContent = data.name || "-";
-      document.getElementById("member-id").textContent = uid || "-";
+      // document.getElementById("member-id").textContent = uid || "-";
       let total = parseFloat(data.total) || 0;
       document.getElementById("member-total").textContent = total.toFixed(2);
 
