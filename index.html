@@ -13,6 +13,27 @@
     #loading { display: none; text-align: center; }
     .spinner { margin: 20px auto; width: 50px; height: 50px; border: 6px solid #f3f3f3; border-top: 6px solid #1DB446; border-radius: 50%; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    #dialog {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    #dialog-content {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 8px;
+      font-size: 18px;
+      text-align: center;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
   </style>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
@@ -41,6 +62,11 @@
   <button onclick="submitRegistration()">ส่งข้อมูล</button>
 </div>
 
+<!-- Dialog Popup -->
+<div id="dialog" class="hidden">
+  <div id="dialog-content"></div>
+</div>
+
 <script>
 async function checkMembership(uid) {
   document.getElementById("loading").style.display = "flex";
@@ -60,7 +86,12 @@ async function checkMembership(uid) {
       if (Array.isArray(data.orders)) {
         data.orders.forEach(order => {
           const li = document.createElement("li");
-          li.textContent = `${order.date || "-"} : ${order.amount} บาท - ${order.note}`;
+          let dateStr = "-";
+          if (order.date) {
+            const d = new Date(order.date);
+            dateStr = new Intl.DateTimeFormat("th-TH", { day: "numeric", month: "short", year: "numeric" }).format(d);
+          }
+          li.textContent = `${dateStr} : ${order.amount} บาท - ${order.note}`;
           orderList.appendChild(li);
         });
       }
@@ -82,7 +113,13 @@ async function checkMembership(uid) {
 }
 
 function showDialog(message) {
-  alert(message); // คุณสามารถเปลี่ยนเป็น popup สวยงามได้
+  const dialog = document.getElementById("dialog");
+  const content = document.getElementById("dialog-content");
+  content.textContent = message;
+  dialog.classList.remove("hidden");
+  setTimeout(() => {
+    dialog.classList.add("hidden");
+  }, 2000);
 }
 
 async function initLiff() {
