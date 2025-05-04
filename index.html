@@ -126,12 +126,14 @@
 <script>
 function showLoading() {
   document.getElementById("loading").style.display = "flex";
+  document.getElementById("loading").classList.remove("hidden");
   document.getElementById("dashboard").classList.add("hidden");
   document.getElementById("register-form").classList.add("hidden");
 }
 
 function hideLoading() {
   document.getElementById("loading").style.display = "none";
+  document.getElementById("loading").classList.add("hidden");
 }
 
 
@@ -191,6 +193,7 @@ function showDialog(message) {
 }
 
 async function initLiff() {
+  showLoading();
   try {
     await liff.init({ liffId: "2007314988-2nrybXKL" }); // เปลี่ยน liffId ให้ตรงกับของคุณ
     if (!liff.isLoggedIn()) {
