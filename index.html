@@ -114,7 +114,10 @@
 
   <div style="margin-top:30px;">
     <h3 style="margin-bottom:10px;">ประวัติการสั่งซื้อ</h3>
-    <input type="date" id="filter-date" onchange="filterOrdersByDate()" style="margin-bottom:15px; padding:10px; width:100%; border-radius:6px; border:1px solid #ddd;">
+    <button id="open-datepicker" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ddd; background:#fff; text-align:left; font-size:16px; margin-bottom:15px;">
+      📅 <span id="selected-date-label">วันนี้</span>
+    </button>
+    <input type="date" id="filter-date" style="display:none;">
     <div id="order-list" style="display:flex; flex-direction:column; gap:10px;"></div>
   </div>
 </div>
@@ -187,28 +190,39 @@ function renderOrderList(orders) {
   orderList.innerHTML = "";
   document.getElementById("member-orders").textContent = orders.length;
 
+  const grouped = {};
+
   orders.forEach(order => {
-    let dateStr = "-";
-    if (order.date) {
-      const d = new Date(order.date);
-      dateStr = new Intl.DateTimeFormat("th-TH", {
-        day: "numeric", month: "short", year: "numeric"
-      }).format(d);
-    }
+    if (!order.date) return;
+    const dateKey = new Date(order.date).toISOString().split("T")[0];
+    if (!grouped[dateKey]) grouped[dateKey] = [];
+    grouped[dateKey].push(order);
+  });
 
-    const box = document.createElement("div");
-    box.style.background = "#f9fafb";
-    box.style.padding = "12px 16px";
-    box.style.borderRadius = "8px";
-    box.style.boxShadow = "0 1px 3px rgba(0,0,0,0.05)";
+  Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a)).forEach(dateKey => {
+    const dateHeader = document.createElement("div");
+    const d = new Date(dateKey);
+    const dateStr = new Intl.DateTimeFormat("th-TH", {
+      day: "numeric", month: "short", year: "numeric"
+    }).format(d);
 
-    box.innerHTML = `
-      <div style="font-size:14px; color:#6b7280;">${dateStr}</div>
-      <div style="font-size:16px; font-weight:500;">${order.note}</div>
-      <div style="font-size:16px; font-weight:bold; color:#111827;">฿${parseFloat(order.amount).toLocaleString()}</div>
-    `;
+    dateHeader.innerHTML = `<div style="font-size:16px; font-weight:600; margin-top:20px; color:#374151;">${dateStr}</div>`;
+    orderList.appendChild(dateHeader);
 
-    orderList.appendChild(box);
+    grouped[dateKey].forEach(order => {
+      const box = document.createElement("div");
+      box.style.background = "#f9fafb";
+      box.style.padding = "12px 16px";
+      box.style.borderRadius = "8px";
+      box.style.boxShadow = "0 1px 3px rgba(0,0,0,0.05)";
+      box.style.marginTop = "8px";
+
+      box.innerHTML = `
+        <div style="font-size:16px; font-weight:500;">${order.note}</div>
+        <div style="font-size:16px; font-weight:bold; color:#111827;">฿${parseFloat(order.amount).toLocaleString()}</div>
+      `;
+      orderList.appendChild(box);
+    });
   });
 }
 
@@ -261,6 +275,30 @@ async function initLiff() {
 }
 
 document.addEventListener("DOMContentLoaded", initLiff);
+
+// Date picker button logic
+document.addEventListener("DOMContentLoaded", function() {
+  const openBtn = document.getElementById("open-datepicker");
+  const dateInput = document.getElementById("filter-date");
+  const label = document.getElementById("selected-date-label");
+  if (openBtn && dateInput && label) {
+    openBtn.addEventListener("click", () => {
+      dateInput.showPicker();
+    });
+    dateInput.addEventListener("change", () => {
+      const date = dateInput.value;
+      const labelStr = date
+        ? new Date(date).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" })
+        : "วันนี้";
+      label.textContent = labelStr;
+      filterOrdersByDate();
+    });
+    // ตั้งค่าเริ่มต้นเป็นวันนี้
+    const today = new Date().toISOString().split("T")[0];
+    dateInput.value = today;
+    label.textContent = new Date(today).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" });
+  }
+});
 </script>
 
 </body>
