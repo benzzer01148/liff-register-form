@@ -266,6 +266,16 @@ async function initLiff() {
       document.getElementById("member-name").textContent = profile.displayName;
       const uid = profile.userId;
       console.log("User ID:", uid);
+      // ส่ง log การเข้าใช้งาน
+      try {
+        await fetch("https://script.google.com/macros/s/AKfycbz5Of6vINT9zfF-nWL72zr2ua4NcDl_h2QVWDBto0pct6cAfbxKqgN3oTSKW-Qx1HU/exec", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "login", userId: uid })
+        });
+      } catch (err) {
+        console.warn("ไม่สามารถบันทึก log การ login", err);
+      }
       await checkMembership(uid);
     }
   } catch (err) {
