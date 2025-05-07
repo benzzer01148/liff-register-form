@@ -113,12 +113,14 @@
   </div>
 
   <div style="margin-top:30px;">
-    <h3 style="margin-bottom:10px;">ประวัติการสั่งซื้อ</h3>
-    <button id="open-datepicker" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ddd; background:#fff; text-align:left; font-size:16px; margin-bottom:15px;">
-      📅 <span id="selected-date-label">วันนี้</span>
-    </button>
+    <h3 style="margin-bottom:10px;">ประวัติคำสั่งซื้อ</h3>
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+      <button id="open-datepicker" style="padding:8px 12px; border-radius:6px; border:1px solid #ccc; background:#fff; font-size:14px; display:flex; align-items:center;">
+        📅 <span id="selected-date-label">วันนี้</span>
+      </button>
+    </div>
     <input type="date" id="filter-date" style="display:none;">
-    <div id="order-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+    <div id="order-list" style="display:flex; flex-direction:column; gap:16px;"></div>
   </div>
 </div>
 
@@ -256,8 +258,10 @@ function renderOrderList(orders) {
       box.style.marginTop = "8px";
 
       box.innerHTML = `
-        <div style="font-size:16px; font-weight:500;">${order.note}</div>
-        <div style="font-size:16px; font-weight:bold; color:#111827;">฿${parseFloat(order.amount).toLocaleString()}</div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:16px; font-weight:500; color:#374151;">${order.note}</div>
+          <div style="font-size:16px; font-weight:bold; color:#1d4ed8;">฿${parseFloat(order.amount).toLocaleString()}</div>
+        </div>
       `;
       orderList.appendChild(box);
     });
