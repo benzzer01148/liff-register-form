@@ -168,7 +168,14 @@
           })
         });
         alert("ส่งคำสั่งซื้อสำเร็จแล้ว");
-        window.location.href = "index.html";
+        const confirmMessage = document.createElement("div");
+        confirmMessage.textContent = "✅ คำสั่งซื้อของคุณถูกส่งเรียบร้อยแล้ว!";
+        confirmMessage.style.marginTop = "16px";
+        confirmMessage.style.padding = "12px";
+        confirmMessage.style.background = "#d1fae5";
+        confirmMessage.style.color = "#065f46";
+        confirmMessage.style.borderRadius = "8px";
+        document.querySelector(".cart").appendChild(confirmMessage);
       } catch (e) {
         alert("เกิดข้อผิดพลาดในการส่งคำสั่งซื้อ");
         console.error(e);
