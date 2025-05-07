@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>สั่งซื้อสินค้า</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f0f2f5;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .product {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .cart {
+      margin-top: 24px;
+      border-top: 2px solid #ccc;
+      padding-top: 16px;
+    }
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+    }
+    button {
+      padding: 6px 12px;
+      margin-left: 10px;
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2563eb;
+    }
+    #submit-btn {
+      width: 100%;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>เลือกสินค้าที่ต้องการ</h2>
+    <div id="product-list"></div>
+
+    <div class="cart">
+      <h3>ตะกร้าสินค้า</h3>
+      <div id="cart-items"></div>
+      <button id="submit-btn">ส่งคำสั่งซื้อ</button>
+    </div>
+  </div>
+
+  <script>
+    const products = [
+      { id: "p1", name: "วิตามินซี 1000mg", price: 250 },
+      { id: "p2", name: "แชมพูสมุนไพร", price: 150 },
+      { id: "p3", name: "สบู่สมุนไพร", price: 80 }
+    ];
+
+    const cart = {};
+
+    function renderProducts() {
+      const list = document.getElementById("product-list");
+      list.innerHTML = "";
+      products.forEach(p => {
+        const row = document.createElement("div");
+        row.className = "product";
+        row.innerHTML = `
+          <div>${p.name} <br><small>฿${p.price.toLocaleString()}</small></div>
+          <div>
+            <button onclick="addToCart('${p.id}')">+</button>
+            <button onclick="removeFromCart('${p.id}')">−</button>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    function renderCart() {
+      const cartEl = document.getElementById("cart-items");
+      cartEl.innerHTML = "";
+      Object.keys(cart).forEach(pid => {
+        const p = products.find(pr => pr.id === pid);
+        if (!p) return;
+        const item = document.createElement("div");
+        item.className = "cart-item";
+        item.innerHTML = `
+          <div>${p.name}</div>
+          <div>x${cart[pid]} = ฿${(p.price * cart[pid]).toLocaleString()}</div>
+        `;
+        cartEl.appendChild(item);
+      });
+    }
+
+    function addToCart(pid) {
+      cart[pid] = (cart[pid] || 0) + 1;
+      renderCart();
+    }
+
+    function removeFromCart(pid) {
+      if (cart[pid]) {
+        cart[pid]--;
+        if (cart[pid] <= 0) delete cart[pid];
+        renderCart();
+      }
+    }
+
+    document.getElementById("submit-btn").addEventListener("click", async () => {
+      const userId = localStorage.getItem("lineUserId");
+      if (!userId || userId === "unknown") {
+        alert("ไม่สามารถดึงข้อมูลผู้ใช้ได้ กรุณาเข้าสู่ระบบผ่าน LINE");
+        return;
+      }
+
+      const items = Object.entries(cart).map(([pid, qty]) => {
+        const product = products.find(p => p.id === pid);
+        return `${product.name} x${qty}`;
+      }).join(" | ");
+
+      const amount = Object.entries(cart).reduce((sum, [pid, qty]) => {
+        const product = products.find(p => p.id === pid);
+        return sum + product.price * qty;
+      }, 0);
+
+      if (!amount) {
+        alert("กรุณาเลือกสินค้า");
+        return;
+      }
+
+      if (!confirm(`ยืนยันการสั่งซื้อรวมทั้งสิ้น ฿${amount.toLocaleString()}?\n\n${items}`)) return;
+
+      const submitBtn = document.getElementById("submit-btn");
+      submitBtn.disabled = true;
+
+      try {
+        await fetch("https://script.google.com/macros/s/AKfycbz5Of6vINT9zfF-nWL72zr2ua4NcDl_h2QVWDBto0pct6cAfbxKqgN3oTSKW-Qx1HU/exec", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "order",
+            userId,
+            amount,
+            date: new Date().toISOString(),
+            note: items
+          })
+        });
+        alert("ส่งคำสั่งซื้อสำเร็จแล้ว");
+        window.location.href = "index.html";
+      } catch (e) {
+        alert("เกิดข้อผิดพลาดในการส่งคำสั่งซื้อ");
+        console.error(e);
+        submitBtn.disabled = false;
+      }
+    });
+
+    renderProducts();
+  </script>
+</body>
+</html>
