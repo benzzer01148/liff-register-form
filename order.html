@@ -63,7 +63,7 @@
     async function fetchProducts() {
       try {
         document.getElementById("loading").classList.remove("hidden");
-        const res = await fetch("https://script.google.com/macros/s/AKfycbzkfSyH-SYf_wazIMGfs5nOAOMyyeWM9og7kSv1Op-kA8Bq_89FsJAOhB8RnqFqp84/exec");
+        const res = await fetch("https://script.google.com/macros/s/AKfycbz5Of6vINT9zfF-nWL72zr2ua4NcDl_h2QVWDBto0pct6cAfbxKqgN3oTSKW-Qx1HU/exec");
         products = await res.json();
         renderProducts();
       } catch (err) {
@@ -207,6 +207,8 @@
         });
         alert("✅ คำสั่งซื้อของคุณถูกส่งเรียบร้อยแล้ว!");
         cartCount.textContent = "0";
+        Object.keys(cart).forEach(k => delete cart[k]);
+        renderCartItems();
       } catch (e) {
         alert("เกิดข้อผิดพลาดในการส่งคำสั่งซื้อ");
         console.error(e);
