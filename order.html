@@ -19,7 +19,7 @@
     <header class="bg-emerald-600 text-white p-4 sticky top-0 z-10 shadow-md">
       <div class="flex justify-between items-center">
         <h1 class="text-xl font-bold">Stage Order</h1>
-        <div class="relative">
+        <div class="relative" onclick="toggleCart(true)">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
           </svg>
@@ -38,13 +38,29 @@
     </div>
   </div>
 
+  <div id="cart-modal" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden flex items-center justify-center">
+    <div class="bg-white p-6 rounded-xl max-w-sm mx-4 w-full">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-bold">รายการในตะกร้า</h2>
+        <button onclick="toggleCart(false)" class="text-gray-500 text-sm">ปิด</button>
+      </div>
+      <div id="cart-items" class="space-y-4 max-h-[300px] overflow-y-auto text-sm text-gray-700"></div>
+    </div>
+  </div>
+
   <script>
-    const products = [
-      { id: "p1", name: "Caesar Salad", desc: "Crisp romaine lettuce with Caesar dressing and croutons", price: 7.99 },
-      { id: "p2", name: "Iced Coffee", desc: "Cold brewed coffee served over ice", price: 3.99 },
-      { id: "p3", name: "Chicken Wrap", desc: "Grilled chicken with fresh veggies in a tortilla wrap", price: 9.49 },
-      { id: "p4", name: "Fruit Smoothie", desc: "Blend of seasonal fruits with yogurt", price: 5.99 },
-    ];
+    let products = [];
+
+    async function fetchProducts() {
+      try {
+        const res = await fetch("https://script.google.com/macros/s/AKfycbzkfSyH-SYf_wazIMGfs5nOAOMyyeWM9og7kSv1Op-kA8Bq_89FsJAOhB8RnqFqp84/exec");
+        products = await res.json();
+        renderProducts();
+      } catch (err) {
+        alert("ไม่สามารถโหลดสินค้าจากระบบได้");
+        console.error(err);
+      }
+    }
 
     const cart = {};
 
@@ -78,6 +94,64 @@
     function addToCart(pid) {
       cart[pid] = (cart[pid] || 0) + 1;
       document.getElementById("cart-count").textContent = Object.values(cart).reduce((a, b) => a + b, 0);
+    }
+
+    function toggleCart(show) {
+      document.getElementById("cart-modal").classList.toggle("hidden", !show);
+      if (show) renderCartItems();
+    }
+
+    function renderCartItems() {
+      const container = document.getElementById("cart-items");
+      container.innerHTML = "";
+      Object.entries(cart).forEach(([pid, qty]) => {
+        const p = products.find(pr => pr.id === pid);
+        if (!p) return;
+        const div = document.createElement("div");
+        div.className = "flex justify-between items-center";
+        div.innerHTML = `
+          <div class="flex items-center justify-between w-full">
+            <div class="flex items-center gap-2">
+              <span>${p.name}</span>
+              <button onclick="changeQty('${pid}', -1)" class="px-2 py-1 bg-gray-200 rounded text-sm">−</button>
+              <span>${qty}</span>
+              <button onclick="changeQty('${pid}', 1)" class="px-2 py-1 bg-gray-200 rounded text-sm">+</button>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm text-gray-700">฿${(p.price * qty).toFixed(2)}</span>
+              <button onclick="removeItem('${pid}')" class="text-red-500 text-xs">ลบ</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+
+      const subtotal = Object.entries(cart).reduce((sum, [pid, qty]) => {
+        const product = products.find(p => p.id === pid);
+        return sum + product.price * qty;
+      }, 0);
+
+      const summaryDiv = document.createElement("div");
+      summaryDiv.className = "flex justify-between items-center border-t pt-4 mt-4 font-semibold text-sm";
+      summaryDiv.innerHTML = `
+        <span>ยอดรวมทั้งหมด</span>
+        <span>฿${subtotal.toFixed(2)}</span>
+      `;
+      container.appendChild(summaryDiv);
+    }
+
+    function changeQty(pid, delta) {
+      if (!cart[pid]) return;
+      cart[pid] += delta;
+      if (cart[pid] <= 0) delete cart[pid];
+      document.getElementById("cart-count").textContent = Object.values(cart).reduce((a, b) => a + b, 0);
+      renderCartItems();
+    }
+
+    function removeItem(pid) {
+      delete cart[pid];
+      document.getElementById("cart-count").textContent = Object.values(cart).reduce((a, b) => a + b, 0);
+      renderCartItems();
     }
 
     document.getElementById("submit-btn").addEventListener("click", async () => {
@@ -129,7 +203,7 @@
     });
 
     document.getElementById("search").addEventListener("input", filterProducts);
-    renderProducts();
+    fetchProducts();
   </script>
 </body>
 </html>
