@@ -6,6 +6,7 @@
   <title>Fresh Eats - สั่งซื้อสินค้า</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
   <style>
     body {
       font-family: 'Poppins', sans-serif;
@@ -58,6 +59,35 @@
   </div>
 
   <script>
+    async function initLIFF() {
+      try {
+        await liff.init({ liffId: "2007314988-2nrybXKL" });
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return;
+        }
+
+        const profile = await liff.getProfile();
+        const userId = profile.userId;
+        localStorage.setItem("lineUserId", userId);
+
+        const res = await fetch(`https://script.google.com/macros/s/AKfycbz5Of6vINT9zfF-nWL72zr2ua4NcDl_h2QVWDBto0pct6cAfbxKqgN3oTSKW-Qx1HU/exec?userId=${userId}`);
+        const userData = await res.json();
+
+        if (userData && userData.name) {
+          console.log("ผู้ใช้:", userData.name, userData.phone);
+        } else {
+          alert("ไม่พบข้อมูลสมาชิกในระบบ");
+        }
+
+      } catch (err) {
+        console.error("LIFF error", err);
+        alert("เกิดข้อผิดพลาดในการเข้าสู่ระบบ LINE");
+      }
+    }
+
+    initLIFF();
+
     let products = [];
 
     async function fetchProducts() {
