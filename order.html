@@ -63,7 +63,7 @@
     async function fetchProducts() {
       try {
         document.getElementById("loading").classList.remove("hidden");
-        const res = await fetch("https://script.google.com/macros/s/AKfycbz5Of6vINT9zfF-nWL72zr2ua4NcDl_h2QVWDBto0pct6cAfbxKqgN3oTSKW-Qx1HU/exec");
+        const res = await fetch("https://script.google.com/macros/s/AKfycbz5Of6vINT9zfF-nWL72zr2ua4NcDl_h2QVWDBto0pct6cAfbxKqgN3oTSKW-Qx1HU/exec?action=products");
         products = await res.json();
         renderProducts();
       } catch (err) {
